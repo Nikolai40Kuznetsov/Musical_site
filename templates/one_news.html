@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Новая статья</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/sorces/images/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #1976D2;
+            transform: scale(1.03);
+        }
+
+        .error-message {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #d32f2f;
+        }
+
+        .success-message {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #388e3c;
+        }
+
+        a#login {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a#login:hover {
+            text-decoration: underline;
+        }
+
+        .img {
+            width: 200px ;
+            height: 200px;
+        }
+        .slider {
+        position: relative;
+        max-width: 600px;
+        margin: auto;
+        overflow: hidden;
+        border-radius: 8px;
+        }
+        .slider-line {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+        }
+        .slide {
+        min-width: 100%;
+        }
+        .slide img {
+        width: 100%;
+        display: block;
+        }
+        .slider-btn {
+        position: absolute;
+        top: 50%;
+        max-width: 47.33px;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 12px;
+        cursor: pointer;
+        }
+        .prev { left: 10px; }
+        .next { right: 10px; }
+        .button228 {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        }
+        .button228:hover {
+        background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="button228">Вернуться назад</a>
+
+
+    
+    <div class="register-container">
+        <h1>{{ article.article_title }} </h1>
+        {{ article.article_annotation}}
+        <!-- {{ articles.article_preview_image }} -->
+
+        {% if error %}
+          <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        {% if message %}
+          <div class="success-message">{{ message }}</div>
+        {% endif %}
+        <h1>{{ article.article_text }}</h1>
+        {%if picture_list %}
+        <div class="slider">
+            <div class="slider-line">
+                {% for pict in picture_list%}
+                <div class="slide"><img class="img" src="data:image/jpeg;base64,{{ pict }}" alt="Slide 1"></div>
+                {% endfor %}
+            </div>
+            {%if len != 1%}
+            <button class="slider-btn prev">&#10094;</button>
+            <button class="slider-btn next">&#10095;</button>
+            {%endif%}
+        </div>
+        {%endif%}
+        {{ article.creation_date }}
+    </div>
+</body>
+<script>
+        const line = document.querySelector('.slider-line');
+    const slides = document.querySelectorAll('.slide');
+    let index = 0;
+
+    function updateSlider() {
+    line.style.transform = `translateX(${-index * 100}%)`;
+    }
+
+    document.querySelector('.next').addEventListener('click', () => {
+    index = (index + 1) % slides.length;
+    updateSlider();
+    });
+
+    document.querySelector('.prev').addEventListener('click', () => {
+    index = (index - 1 + slides.length) % slides.length;
+    updateSlider();
+    });
+</script>
+</html>

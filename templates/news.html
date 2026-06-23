@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/news.css' %}">
+    <title>Новости</title>
+    <style>
+        .button228 {
+            position: fixed; top: 10px; left: 10px; display: inline-block; padding: 10px 20px;
+            background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;
+        }
+        .button228:hover { background-color: #0056b3; }
+
+        .limit-btn {
+            position: fixed; left: 10px; display: inline-block; padding: 10px 20px;
+            background-color: #bbbbbb; color: #fff; text-decoration: none; border-radius: 5px;
+        }
+        .limit-btn:hover { background-color: #858585; }
+        
+        .limit-btn.active { background-color: #28a745; font-weight: bold; }
+        
+        .button229 { top: 60px; }
+        .button230 { top: 110px; }
+        .button231 { top: 160px; }
+        .button232 { top: 210px; font-size: 30px; max-width: 57.8px; max-height: 38.67px; padding: 1px 20px 20px 18px}
+        .colNews {top: 260px; position: fixed;}
+
+        /* Стили для кнопки выхода и информации о пользователе */
+        .logout-btn {
+            position: fixed; top: 10px; right: 10px; display: inline-block; padding: 10px 20px;
+            background-color: #dc3545; color: #fff; text-decoration: none; border-radius: 5px;
+        }
+        .logout-btn:hover { background-color: #c82333; }
+
+        .user-info {
+            position: fixed; top: 60px; right: 10px; display: inline-block; padding: 10px 20px;
+            background-color: #17a2b8; color: #fff; text-decoration: none; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="new" class="button228">Создать новость</a>
+    
+    <!-- Информация о пользователе -->
+    <div class="user-info">
+        👤 {{ user.username }}
+    </div>
+    
+    <!-- Кнопка выхода -->
+    <a href="{% url 'logout' %}" class="logout-btn">🚪 Выйти</a>
+    
+    <a href="?limit=10" class="limit-btn button229 {% if current_limit == 10 %}active{% endif %}">10</a>
+    <a href="?limit=20" class="limit-btn button230 {% if current_limit == 20 %}active{% endif %}">20</a>
+    <a href="?limit=30" class="limit-btn button231 {% if current_limit == 30 %}active{% endif %}">30</a>
+    <a href="?limit=10000000" class="limit-btn button232 {% if current_limit == 10000000 %}active{% endif %}">∞</a>
+    <p class = "colNews">Всего статей: {{ colNews }}</p>
+
+    <div class="wrapper">
+        {% for news in newsList %}
+        <a href="news/{{ news.article_id }}" class="news-container">
+            <img src="data:image/jpeg;base64,{{ news.imageBase }}" class="img">
+            <div class="info-container">
+                <h1>{{ news.article_title }}</h1>
+                <p>{{ news.article_annotation }}</p>
+            </div>
+        </a>
+        {% empty %}
+        <p>Новостей пока нет.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
