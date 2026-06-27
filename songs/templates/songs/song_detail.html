@@ -1,0 +1,199 @@
+{% extends 'songs/base.html' %}
+
+{% block title %}{{ song.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        {% if song.cover_image %}
+                            <img src="{{ song.cover_image.url }}" alt="{{ song.title }}" class="img-fluid rounded" style="max-height: 280px; width: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center" style="height: 280px; background: #f7f7f8; border-radius: 8px;">
+                                <i class="bi bi-music-note" style="font-size: 4rem; color: #ccc;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h2 style="font-weight: 600; font-size: 1.6rem;">{{ song.title }}</h2>
+                        <h5 class="text-muted" style="font-size: 1.1rem; font-weight: 400;">{{ song.artist }}</h5>
+                        
+                        <div class="mt-3">
+                            <span class="badge bg-secondary">{{ song.genre }}</span>
+                            <span class="badge bg-light text-dark">{{ song.release_year }}</span>
+                            {% if song.is_single %}
+                                <span class="badge bg-success">Сингл</span>
+                            {% else %}
+                                <span class="badge bg-warning">Альбом</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3">
+                            <div style="font-weight: 500; font-size: 1.2rem;">{{ song.get_rating_display }}</div>
+                            <div class="stars-display mt-1">
+                                {% for i in "123456789"|make_list %}
+                                    <i class="bi bi-star{% if forloop.counter <= song.get_star_rating %}-fill{% endif %}" 
+                                       style="color: {% if forloop.counter <= song.get_star_rating %}#f5a623{% else %}#ddd{% endif %};">
+                                    </i>
+                                {% endfor %}
+                                <i class="bi bi-star{% if 10 <= song.get_star_rating %}-fill{% endif %}" 
+                                   style="color: {% if 10 <= song.get_star_rating %}#f5a623{% else %}#ddd{% endif %};">
+                                </i>
+                            </div>
+                            <span class="text-muted" style="font-size: 0.85rem;">{{ song.total_votes }} голосов</span>
+                        </div>
+
+                        {% if user.is_authenticated %}
+                            {% if not song.user_has_voted %}
+                                <div class="vote-section mt-3">
+                                    <label class="form-label" style="font-size: 0.9rem; font-weight: 500;">Ваша оценка:</label>
+                                    <div class="stars vote-stars mt-1" data-song-id="{{ song.pk }}">
+                                        {% for i in "123456789"|make_list %}
+                                            <i class="bi bi-star" data-value="{{ forloop.counter }}" 
+                                               style="cursor: pointer; font-size: 1.4rem; transition: all 0.1s; color: #ddd;">
+                                            </i>
+                                        {% endfor %}
+                                        <i class="bi bi-star" data-value="10" 
+                                           style="cursor: pointer; font-size: 1.4rem; transition: all 0.1s; color: #ddd;">
+                                        </i>
+                                    </div>
+                                    <button id="submit-vote-btn" class="btn btn-primary mt-2" data-song-id="{{ song.pk }}" disabled style="font-size: 0.85rem;">
+                                        <i class="bi bi-check-circle"></i> Проголосовать
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mt-3" style="font-size: 0.9rem;">
+                                    <i class="bi bi-info-circle"></i> Вы уже проголосовали
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning mt-3" style="font-size: 0.9rem;">
+                                <i class="bi bi-lock"></i> Войдите, чтобы проголосовать
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr style="margin: 24px 0; border-color: #eee;">
+
+                <div>
+                    <h5 style="font-weight: 600; font-size: 1rem; margin-bottom: 12px;">
+                        <i class="bi bi-file-text"></i> Текст
+                    </h5>
+                    <div class="lyrics-container">
+                        {{ song.lyrics|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted" style="font-size: 0.8rem;">
+                        Добавлено: {{ song.created_by.username|default:"Неизвестно" }} · 
+                        {{ song.created_at|date:"d.m.Y H:i" }}
+                    </small>
+                </div>
+
+                <div class="mt-4 d-flex gap-2 flex-wrap">
+                    <a href="{% url 'songs:index' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'songs:song_update' pk=song.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <a href="{% url 'songs:song_delete' pk=song.pk %}" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.vote-stars .bi-star');
+    const submitBtn = document.getElementById('submit-vote-btn');
+    let selectedRating = null;
+
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.dataset.value);
+            selectedRating = value;
+            
+            stars.forEach(s => {
+                const v = parseInt(s.dataset.value);
+                if (v <= value) {
+                    s.classList.remove('bi-star');
+                    s.classList.add('bi-star-fill');
+                    s.style.color = '#f5a623';
+                } else {
+                    s.classList.remove('bi-star-fill');
+                    s.classList.add('bi-star');
+                    s.style.color = '#ddd';
+                }
+            });
+            
+            submitBtn.disabled = false;
+        });
+
+        star.addEventListener('mouseover', function() {
+            const value = parseInt(this.dataset.value);
+            stars.forEach(s => {
+                const v = parseInt(s.dataset.value);
+                if (v <= value) {
+                    s.style.color = '#f5a623';
+                }
+            });
+        });
+
+        star.addEventListener('mouseout', function() {
+            const value = selectedRating || 0;
+            stars.forEach(s => {
+                const v = parseInt(s.dataset.value);
+                if (v <= value) {
+                    s.style.color = '#f5a623';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+
+    submitBtn.addEventListener('click', function() {
+        if (!selectedRating) {
+            alert('Выберите оценку!');
+            return;
+        }
+        
+        const songId = this.dataset.songId;
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+        
+        fetch(`/song/${songId}/vote/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ rating: selectedRating })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Голос учтен!');
+                location.reload();
+            } else {
+                alert(data.error || 'Ошибка');
+            }
+        })
+        .catch(error => {
+            alert('Ошибка при голосовании');
+        });
+    });
+});
+</script>
+{% endblock %}
